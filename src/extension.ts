@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { formatSelectionLocation } from "./selectionLocation";
+import { getTerminalSendText } from "./terminalSendText";
 
 const SEND_COMMAND = "codeIndicator.sendSelectionLocationToActiveTerminal";
 const COPY_COMMAND = "codeIndicator.copySelectionLocation";
@@ -88,10 +89,15 @@ function sendToActiveTerminal(value: string): void {
     return;
   }
 
-  terminal.sendText(value);
+  const sendText = getTerminalSendText(value, getTerminalTrailingCharacter());
+  terminal.sendText(sendText.text, sendText.addNewLine);
   if (shouldFocusTerminalAfterSend()) {
     terminal.show(false);
   }
+}
+
+function getTerminalTrailingCharacter(): string {
+  return vscode.workspace.getConfiguration("codeIndicator").get<string>("terminal.trailingCharacter", "space");
 }
 
 function shouldFocusTerminalAfterSend(): boolean {

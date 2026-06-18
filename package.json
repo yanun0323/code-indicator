@@ -2,7 +2,7 @@
   "name": "code-indicator",
   "displayName": "Code Indicator",
   "description": "Copy or send the current selection location in an rg-friendly format.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "Yanun",
   "license": "SEE LICENSE IN LICENSE",
   "icon": "media/icon.png",
@@ -58,6 +58,20 @@
           "default": true,
           "scope": "resource",
           "description": "Focus the active terminal after sending a location."
+        },
+        "codeIndicator.terminal.trailingCharacter": {
+          "type": "string",
+          "enum": [
+            "space",
+            "newline"
+          ],
+          "default": "space",
+          "scope": "resource",
+          "description": "Choose the trailing character sent after the location.",
+          "enumDescriptions": [
+            "Append a space after the location without submitting the terminal input.",
+            "Submit the terminal input after the location."
+          ]
         }
       }
     },
