@@ -3,6 +3,7 @@ export
 
 PATH := $(CURDIR)/.tools/node/bin:$(PATH)
 NPM := $(CURDIR)/.tools/node/bin/npm
+VSCE := $(CURDIR)/node_modules/.bin/vsce
 
 .PHONY: $(wildcard *)
 
@@ -34,13 +35,13 @@ dev:
 clean:
 	rm -rf out
 
-## package: 
+## package: build and package the extension as a VSIX
 package:
-	vsce package
+	$(VSCE) package
 
-## publish: 
+## publish: publish the extension to VS Code Marketplace
 publish:
-	vsce publish
+	$(VSCE) publish
 
 ARGS := $(word 2,$(MAKECMDGOALS))
 %:
