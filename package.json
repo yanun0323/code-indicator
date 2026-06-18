@@ -2,9 +2,23 @@
   "name": "code-indicator",
   "displayName": "Code Indicator",
   "description": "Copy or send the current selection location in an rg-friendly format.",
-  "version": "0.0.1",
-  "publisher": "local",
-  "license": "MIT",
+  "version": "1.0.1",
+  "publisher": "Yanun",
+  "license": "SEE LICENSE IN LICENSE",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yanun0323/code-indicator.git"
+  },
+  "keywords": [
+    "codex",
+    "claude-code",
+    "opencode",
+    "cli",
+    "agent",
+    "selection",
+    "terminal"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -87,11 +101,13 @@
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node --test out/test/**/*.test.js"
+    "test": "npm run compile && node --test out/test/**/*.test.js",
+    "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
     "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.9.2",
     "typescript": "^5.4.5"
   }
 }
