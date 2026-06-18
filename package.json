@@ -1,0 +1,97 @@
+{
+  "name": "code-indicator",
+  "displayName": "Code Indicator",
+  "description": "Copy or send the current selection location in an rg-friendly format.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:codeIndicator.sendSelectionLocationToActiveTerminal",
+    "onCommand:codeIndicator.copySelectionLocation",
+    "onCommand:codeIndicator.copySelectionLocationAndSendToActiveTerminal"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Code Indicator",
+      "properties": {
+        "codeIndicator.contextMenu.copyLocation": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Show Copy Location in the editor context menu."
+        },
+        "codeIndicator.contextMenu.sendLocationToTerminal": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Show Send Location to Terminal in the editor context menu."
+        },
+        "codeIndicator.contextMenu.copyAndSendLocationToTerminal": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Show Copy and Send Location to Terminal in the editor context menu."
+        },
+        "codeIndicator.terminal.focusAfterSend": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Focus the active terminal after sending a location."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "codeIndicator.sendSelectionLocationToActiveTerminal",
+        "title": "Send Location to Terminal",
+        "category": "Code Indicator"
+      },
+      {
+        "command": "codeIndicator.copySelectionLocation",
+        "title": "Copy Location",
+        "category": "Code Indicator"
+      },
+      {
+        "command": "codeIndicator.copySelectionLocationAndSendToActiveTerminal",
+        "title": "Copy and Send Location to Terminal",
+        "category": "Code Indicator"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codeIndicator.copySelectionLocation",
+          "when": "config.codeIndicator.contextMenu.copyLocation",
+          "group": "codeIndicator@1"
+        },
+        {
+          "command": "codeIndicator.sendSelectionLocationToActiveTerminal",
+          "when": "config.codeIndicator.contextMenu.sendLocationToTerminal",
+          "group": "codeIndicator@2"
+        },
+        {
+          "command": "codeIndicator.copySelectionLocationAndSendToActiveTerminal",
+          "when": "config.codeIndicator.contextMenu.copyAndSendLocationToTerminal",
+          "group": "codeIndicator@3"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test out/test/**/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.4.5"
+  }
+}
