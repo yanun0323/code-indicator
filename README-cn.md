@@ -26,14 +26,15 @@ CLI coding agent 收到精确的 code location 时，工作效果最好。你不
 
 ## Settings
 
-editor context menu 的项目可以单独显示或隐藏。发送到 terminal 后自动 focus terminal 的功能默认开启。
+editor context menu 的项目可以单独显示或隐藏。发送到 terminal 后自动 focus terminal 的功能默认开启。发送到 terminal 的最后一个字符默认是空格。
 
 ```json
 {
   "codeIndicator.contextMenu.copyLocation": true,
   "codeIndicator.contextMenu.sendLocationToTerminal": true,
   "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true,
-  "codeIndicator.terminal.focusAfterSend": true
+  "codeIndicator.terminal.focusAfterSend": true,
+  "codeIndicator.terminal.trailingCharacter": "space"
 }
 ```
 

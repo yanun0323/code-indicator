@@ -26,14 +26,15 @@ Each command is available from the Command Palette, editor context menu, and VS 
 
 ## Settings
 
-The editor context menu items can be shown or hidden individually. Terminal focus after sending is enabled by default.
+The editor context menu items can be shown or hidden individually. Terminal focus after sending is enabled by default. The trailing character sent to the terminal defaults to a space.
 
 ```json
 {
   "codeIndicator.contextMenu.copyLocation": true,
   "codeIndicator.contextMenu.sendLocationToTerminal": true,
   "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true,
-  "codeIndicator.terminal.focusAfterSend": true
+  "codeIndicator.terminal.focusAfterSend": true,
+  "codeIndicator.terminal.trailingCharacter": "space"
 }
 ```
 

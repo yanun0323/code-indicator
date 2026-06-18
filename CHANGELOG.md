@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- Add a terminal trailing character setting with `space` as the default.
+- Support the previous newline submit behavior through `codeIndicator.terminal.trailingCharacter`.
+
 ## 1.0.0
 
 - Initial release.
