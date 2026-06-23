@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5
+
+- Fix embedded terminal layout sizing inside the Code Indicator view.
+- Keep terminal padding on the view body so the terminal container can fill the available space without viewport overflow.
+
 ## 1.0.4
 
 - Use the VS Code console codicon for the Code Indicator activity bar icon.

@@ -21,8 +21,19 @@ When no text is selected, Code Indicator uses the cursor position.
 - `codeIndicator.copySelectionLocation`
 - `codeIndicator.sendSelectionLocationToActiveTerminal`
 - `codeIndicator.copySelectionLocationAndSendToActiveTerminal`
+- `codeIndicator.toggleView`
+- `codeIndicator.spawnTerminal`
+- `codeIndicator.killTerminal`
+- `codeIndicator.restartTerminal`
+- `codeIndicator.openSettings`
 
 Each command is available from the Command Palette, editor context menu, and VS Code Keyboard Shortcuts.
+
+## Embedded Terminal
+
+Code Indicator includes an activity bar view with an embedded terminal. Sending a location starts the embedded terminal when it is available, focuses it, and writes the location using the configured trailing character.
+
+The view toolbar can spawn, kill, restart, or open settings for the Code Indicator terminal. Killing the terminal keeps the view open and clears the stopped session output.
 
 ## Settings
 
@@ -38,6 +49,8 @@ The editor context menu items can be shown or hidden individually. Terminal focu
   "codeIndicator.terminal.trailingCharacter": "space"
 }
 ```
+
+`codeIndicator.terminal.trailingCharacter` accepts `space` or `newline`.
 
 ## Output Format
 
