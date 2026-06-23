@@ -16,10 +16,6 @@ const RESTART_TERMINAL_COMMAND = "codeIndicator.restartTerminal";
 const PANEL_VIEW_ID = "codeIndicator.panel";
 const PANEL_FOCUS_COMMAND = `${PANEL_VIEW_ID}.focus`;
 const VIEW_FOCUSED_CONTEXT = "codeIndicator.viewFocused";
-const CLOSE_PRIMARY_SIDEBAR_COMMAND = "workbench.action.closeSidebar";
-const TOGGLE_PRIMARY_SIDEBAR_COMMAND = "workbench.action.toggleSidebarVisibility";
-const CLOSE_AUXILIARY_SIDEBAR_COMMAND = "workbench.action.closeAuxiliaryBar";
-const TOGGLE_AUXILIARY_SIDEBAR_COMMAND = "workbench.action.toggleAuxiliaryBar";
 let terminalSession: PtyTerminalSession | undefined;
 let terminalViewProvider: CodeIndicatorTerminalViewProvider | undefined;
 let codeIndicatorViewOpen = false;
@@ -69,13 +65,8 @@ export function deactivate(): void {
 }
 
 async function toggleCodeIndicatorView(): Promise<void> {
-  if (!codeIndicatorViewOpen && !terminalViewProvider?.visible) {
-    await focusCodeIndicatorView();
-    spawnStoppedTerminal();
-    return;
-  }
-
-  await closeCodeIndicatorView();
+  await focusCodeIndicatorView();
+  spawnStoppedTerminal();
 }
 
 async function spawnTerminal(): Promise<void> {
@@ -85,7 +76,6 @@ async function spawnTerminal(): Promise<void> {
 
 async function killTerminal(): Promise<void> {
   terminalSession?.kill();
-  await closeCodeIndicatorView();
 }
 
 async function restartTerminal(): Promise<void> {
@@ -185,19 +175,6 @@ function spawnStoppedTerminal(): void {
   if (terminalSession?.getStatus().state === "stopped") {
     terminalSession.spawn();
   }
-}
-
-async function closeCodeIndicatorView(): Promise<void> {
-  await vscode.commands.executeCommand(CLOSE_PRIMARY_SIDEBAR_COMMAND);
-  await vscode.commands.executeCommand(CLOSE_AUXILIARY_SIDEBAR_COMMAND);
-  if (codeIndicatorViewOpen || terminalViewProvider?.visible) {
-    await vscode.commands.executeCommand(TOGGLE_PRIMARY_SIDEBAR_COMMAND);
-  }
-  if (codeIndicatorViewOpen || terminalViewProvider?.visible) {
-    await vscode.commands.executeCommand(TOGGLE_AUXILIARY_SIDEBAR_COMMAND);
-  }
-  codeIndicatorViewOpen = terminalViewProvider?.visible ?? false;
-  updateViewFocusContext(false);
 }
 
 async function focusCodeIndicatorView(): Promise<void> {

@@ -98,7 +98,7 @@
       },
       {
         "command": "codeIndicator.toggleView",
-        "title": "Toggle Code Indicator View",
+        "title": "Open Code Indicator View",
         "category": "Code Indicator"
       },
       {
@@ -161,14 +161,19 @@
       ],
       "view/title": [
         {
-          "command": "codeIndicator.killTerminal",
-          "when": "view == codeIndicator.panel",
+          "command": "codeIndicator.spawnTerminal",
+          "when": "view == codeIndicator.panel && !codeIndicator.terminalLive",
           "group": "navigation@1"
+        },
+        {
+          "command": "codeIndicator.killTerminal",
+          "when": "view == codeIndicator.panel && codeIndicator.terminalLive",
+          "group": "navigation@2"
         },
         {
           "command": "codeIndicator.restartTerminal",
           "when": "view == codeIndicator.panel",
-          "group": "navigation@2"
+          "group": "navigation@3"
         }
       ]
     }
