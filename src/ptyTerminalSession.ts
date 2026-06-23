@@ -30,7 +30,7 @@ export interface PtySpawnOptions {
 export type PtyFactory = (file: string, args: readonly string[], options: PtySpawnOptions) => PtyProcess;
 
 export interface TerminalSessionStatus {
-  readonly state: "idle" | "starting" | "ready" | "exited" | "error";
+  readonly state: "idle" | "starting" | "ready" | "exited" | "error" | "stopped";
   readonly message: string;
 }
 
@@ -53,6 +53,7 @@ export class PtyTerminalSession {
   private readonly dataListeners = new Set<(data: string) => void>();
   private readonly statusListeners = new Set<(status: TerminalSessionStatus) => void>();
   private readonly exitListeners = new Set<(event: PtyExitEvent) => void>();
+  private readonly clearListeners = new Set<() => void>();
   private pty: PtyProcess | undefined;
   private dataDisposable: DisposableLike | undefined;
   private exitDisposable: DisposableLike | undefined;
@@ -61,7 +62,7 @@ export class PtyTerminalSession {
   private rows: number;
   private status: TerminalSessionStatus = {
     state: "idle",
-    message: "終端機尚未啟動"
+    message: "Terminal is not started"
   };
 
   constructor(options: TerminalSessionOptions = {}) {
@@ -89,6 +90,11 @@ export class PtyTerminalSession {
     return toDisposable(() => this.exitListeners.delete(listener));
   }
 
+  onClear(listener: () => void): DisposableLike {
+    this.clearListeners.add(listener);
+    return toDisposable(() => this.clearListeners.delete(listener));
+  }
+
   getBufferedOutput(): string {
     return this.bufferedOutput;
   }
@@ -102,13 +108,17 @@ export class PtyTerminalSession {
   }
 
   ensureStarted(): boolean {
+    return this.spawn();
+  }
+
+  spawn(): boolean {
     if (this.pty) {
       return true;
     }
 
     this.setStatus({
       state: "starting",
-      message: "終端機啟動中"
+      message: "Terminal is starting"
     });
 
     try {
@@ -130,14 +140,14 @@ export class PtyTerminalSession {
       this.exitDisposable = pty.onExit((event) => this.handleExit(event));
       this.setStatus({
         state: "ready",
-        message: "終端機已連線"
+        message: "Terminal is connected"
       });
       return true;
     } catch {
       this.cleanupPty();
       this.setStatus({
         state: "error",
-        message: "終端機啟動失敗"
+        message: "Terminal failed to start"
       });
       return false;
     }
@@ -162,13 +172,33 @@ export class PtyTerminalSession {
   }
 
   restart(): boolean {
+    this.clear();
     if (this.pty) {
       this.pty.kill();
       this.cleanupPty();
     }
 
-    this.bufferedOutput = "";
-    return this.ensureStarted();
+    return this.spawn();
+  }
+
+  kill(): boolean {
+    if (!this.pty) {
+      this.clear();
+      this.setStatus({
+        state: "stopped",
+        message: "Terminal stopped"
+      });
+      return false;
+    }
+
+    this.pty.kill();
+    this.cleanupPty();
+    this.clear();
+    this.setStatus({
+      state: "stopped",
+      message: "Terminal stopped"
+    });
+    return true;
   }
 
   dispose(): void {
@@ -179,6 +209,7 @@ export class PtyTerminalSession {
     this.dataListeners.clear();
     this.statusListeners.clear();
     this.exitListeners.clear();
+    this.clearListeners.clear();
   }
 
   private handleData(data: string): void {
@@ -196,7 +227,7 @@ export class PtyTerminalSession {
     this.cleanupPty();
     this.setStatus({
       state: "exited",
-      message: "終端機已結束"
+      message: "Terminal exited"
     });
 
     for (const listener of this.exitListeners) {
@@ -208,6 +239,13 @@ export class PtyTerminalSession {
     this.status = status;
     for (const listener of this.statusListeners) {
       listener(status);
+    }
+  }
+
+  private clear(): void {
+    this.bufferedOutput = "";
+    for (const listener of this.clearListeners) {
+      listener();
     }
   }
 

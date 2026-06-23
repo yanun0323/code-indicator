@@ -92,6 +92,23 @@ test("buffers PTY output for a later webview", () => {
   assert.equal(session.getBufferedOutput(), "prompt");
 });
 
+test("does not spawn a second PTY when one is already live", () => {
+  const fakePty = new FakePty();
+  let spawnCount = 0;
+  const session = new PtyTerminalSession({
+    ptyFactory: () => {
+      spawnCount += 1;
+      return fakePty;
+    }
+  });
+
+  assert.equal(session.spawn(), true);
+  assert.equal(session.spawn(), true);
+
+  assert.equal(spawnCount, 1);
+  assert.equal(session.isLive(), true);
+});
+
 test("resizes an active PTY and preserves dimensions for startup", () => {
   const fakePty = new FakePty();
   let startupOptions: PtySpawnOptions | undefined;
@@ -109,6 +126,44 @@ test("resizes an active PTY and preserves dimensions for startup", () => {
   assert.equal(startupOptions?.cols, 120);
   assert.equal(startupOptions?.rows, 40);
   assert.deepEqual(fakePty.resizes, [{ columns: 100, rows: 32 }]);
+});
+
+test("kills a live PTY, clears buffered output, and reports stopped", () => {
+  const fakePty = new FakePty();
+  let clearCount = 0;
+  const session = new PtyTerminalSession({
+    ptyFactory: () => fakePty
+  });
+
+  session.onClear(() => {
+    clearCount += 1;
+  });
+  session.ensureStarted();
+  fakePty.emitData("prompt");
+
+  assert.equal(session.kill(), true);
+
+  assert.equal(fakePty.killed, true);
+  assert.equal(session.isLive(), false);
+  assert.equal(session.getBufferedOutput(), "");
+  assert.equal(session.getStatus().state, "stopped");
+  assert.equal(clearCount, 1);
+});
+
+test("kill is a no-op when no PTY is live", () => {
+  let spawnCount = 0;
+  const session = new PtyTerminalSession({
+    ptyFactory: () => {
+      spawnCount += 1;
+      return new FakePty();
+    }
+  });
+
+  assert.equal(session.kill(), false);
+
+  assert.equal(spawnCount, 0);
+  assert.equal(session.isLive(), false);
+  assert.equal(session.getStatus().state, "stopped");
 });
 
 test("marks the session exited and allows restart", () => {
@@ -130,6 +185,25 @@ test("marks the session exited and allows restart", () => {
 
   assert.equal(session.restart(), true);
   assert.equal(session.isLive(), true);
+});
+
+test("restart kills the current PTY, clears output, and spawns a new PTY", () => {
+  const firstPty = new FakePty();
+  const secondPty = new FakePty();
+  const ptys = [firstPty, secondPty];
+  const session = new PtyTerminalSession({
+    ptyFactory: () => ptys.shift() ?? new FakePty()
+  });
+
+  session.ensureStarted();
+  firstPty.emitData("old output");
+
+  assert.equal(session.restart(), true);
+
+  assert.equal(firstPty.killed, true);
+  assert.equal(session.isLive(), true);
+  assert.equal(session.getBufferedOutput(), "");
+  assert.equal(ptys.length, 0);
 });
 
 test("returns false and reports an error when PTY startup throws", () => {
