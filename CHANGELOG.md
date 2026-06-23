@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- Use the VS Code console codicon for the Code Indicator activity bar icon.
+
 ## 1.0.3
 
 - Add an embedded terminal startup command setting.
