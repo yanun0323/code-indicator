@@ -6,19 +6,38 @@ const TERMINAL_READY_TYPE = "ready";
 const TERMINAL_INPUT_TYPE = "input";
 const TERMINAL_RESIZE_TYPE = "resize";
 const TERMINAL_RESTART_TYPE = "restart";
+const TERMINAL_FOCUS_CHANGED_TYPE = "focusChanged";
 
 export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
+  private readonly visibilityEmitter = new vscode.EventEmitter<boolean>();
+  private readonly focusEmitter = new vscode.EventEmitter<boolean>();
   private readonly disposables: vscode.Disposable[] = [];
   private view: vscode.WebviewView | undefined;
+  private webviewReady = false;
+  readonly onDidChangeVisibility = this.visibilityEmitter.event;
+  readonly onDidChangeFocus = this.focusEmitter.event;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly session: PtyTerminalSession
   ) {
     this.disposables.push(
-      toVsCodeDisposable(this.session.onData((data) => this.postMessage({ type: "data", data }))),
+      toVsCodeDisposable(
+        this.session.onData((data) => {
+          if (this.webviewReady) {
+            this.postMessage({ type: "data", data });
+          }
+        })
+      ),
       toVsCodeDisposable(this.session.onStatus((status) => this.postStatus(status))),
-      toVsCodeDisposable(this.session.onExit((event) => this.postMessage({ type: "exit", ...event })))
+      toVsCodeDisposable(this.session.onExit((event) => this.postMessage({ type: "exit", ...event }))),
+      toVsCodeDisposable(
+        this.session.onClear(() => {
+          if (this.webviewReady) {
+            this.postMessage({ type: "clear" });
+          }
+        })
+      )
     );
   }
 
@@ -26,8 +45,13 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
     return this.view?.visible ?? false;
   }
 
+  focusTerminal(): void {
+    this.postMessage({ type: "focus" });
+  }
+
   resolveWebviewView(webviewView: vscode.WebviewView): void {
     this.view = webviewView;
+    this.webviewReady = false;
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [
@@ -42,17 +66,31 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
         if (this.view === webviewView) {
           this.view = undefined;
         }
+        this.webviewReady = false;
+        this.visibilityEmitter.fire(false);
+        this.focusEmitter.fire(false);
+      }),
+      webviewView.onDidChangeVisibility(() => {
+        this.visibilityEmitter.fire(webviewView.visible);
+        if (!webviewView.visible) {
+          this.focusEmitter.fire(false);
+        }
+        if (webviewView.visible && this.webviewReady && this.session.getStatus().state === "stopped") {
+          this.session.spawn();
+        }
       }),
       webviewView.webview.onDidReceiveMessage((message: unknown) => this.handleMessage(message))
     );
 
-    this.session.ensureStarted();
+    this.visibilityEmitter.fire(webviewView.visible);
   }
 
   dispose(): void {
     for (const disposable of this.disposables.splice(0)) {
       disposable.dispose();
     }
+    this.visibilityEmitter.dispose();
+    this.focusEmitter.dispose();
   }
 
   private handleMessage(message: unknown): void {
@@ -62,11 +100,20 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
 
     switch (message.type) {
       case TERMINAL_READY_TYPE:
+        if (this.webviewReady) {
+          this.postStatus(this.session.getStatus());
+          break;
+        }
+
+        this.webviewReady = true;
+        const startedForReadyView = this.startTerminalForReadyView();
         this.postStatus(this.session.getStatus());
-        this.postMessage({
-          type: "data",
-          data: this.session.getBufferedOutput()
-        });
+        if (!startedForReadyView) {
+          this.postMessage({
+            type: "data",
+            data: this.session.getBufferedOutput()
+          });
+        }
         break;
       case TERMINAL_INPUT_TYPE:
         if (typeof message.data === "string") {
@@ -81,7 +128,21 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
       case TERMINAL_RESTART_TYPE:
         this.session.restart();
         break;
+      case TERMINAL_FOCUS_CHANGED_TYPE:
+        if (typeof message.focused === "boolean") {
+          this.focusEmitter.fire(message.focused);
+        }
+        break;
     }
+  }
+
+  private startTerminalForReadyView(): boolean {
+    const state = this.session.getStatus().state;
+    if (state === "idle" || state === "stopped") {
+      return this.session.ensureStarted();
+    }
+
+    return false;
   }
 
   private postStatus(status: TerminalSessionStatus): void {
@@ -129,8 +190,8 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
 <body>
   <main id="terminal" aria-label="Code Indicator Terminal"></main>
   <section id="statusPanel" class="status-panel" aria-live="polite">
-    <span id="statusText">終端機啟動中</span>
-    <button id="restartButton" type="button" hidden>重新啟動</button>
+    <span id="statusText">Terminal is starting</span>
+    <button id="restartButton" type="button" hidden>Restart</button>
   </section>
   <script nonce="${nonce}" src="${xtermScriptUri}"></script>
   <script nonce="${nonce}" src="${fitScriptUri}"></script>

@@ -29,7 +29,7 @@
 
   restartButton.addEventListener("click", () => {
     terminal.clear();
-    setStatus("終端機啟動中", false);
+    setStatus("Terminal is starting", false, false);
     vscode.postMessage({ type: "restart" });
     terminal.focus();
   });
@@ -41,18 +41,37 @@
     }
 
     switch (message.type) {
+      case "clear":
+        terminal.clear();
+        break;
+      case "focus":
+        terminal.focus();
+        postFocusState(true);
+        break;
       case "data":
         if (typeof message.data === "string" && message.data.length > 0) {
           terminal.write(message.data);
         }
         break;
       case "status":
-        setStatus(message.message, message.state === "exited" || message.state === "error");
+        setStatus(
+          message.message,
+          message.state === "exited" || message.state === "error" || message.state === "stopped",
+          message.state === "exited" || message.state === "error"
+        );
         break;
       case "exit":
-        setStatus("終端機已結束", true);
+        setStatus("Terminal exited", true, true);
         break;
     }
+  });
+
+  window.addEventListener("focus", () => {
+    postFocusState(true);
+  });
+
+  window.addEventListener("blur", () => {
+    postFocusState(false);
   });
 
   const resizeObserver = new ResizeObserver(() => {
@@ -64,6 +83,7 @@
   requestAnimationFrame(() => {
     fitAndNotify();
     terminal.focus();
+    postFocusState(true);
     vscode.postMessage({ type: "ready" });
   });
 
@@ -87,9 +107,16 @@
     });
   }
 
-  function setStatus(message, showRestart) {
+  function setStatus(message, showPanel, showRestart) {
     statusText.textContent = message || "";
     restartButton.hidden = !showRestart;
-    statusPanel.classList.toggle("visible", Boolean(message) && showRestart);
+    statusPanel.classList.toggle("visible", Boolean(message) && showPanel);
+  }
+
+  function postFocusState(focused) {
+    vscode.postMessage({
+      type: "focusChanged",
+      focused
+    });
   }
 })();
