@@ -5,17 +5,58 @@ import { getTerminalSendText } from "./terminalSendText";
 const SEND_COMMAND = "codeIndicator.sendSelectionLocationToActiveTerminal";
 const COPY_COMMAND = "codeIndicator.copySelectionLocation";
 const COPY_AND_SEND_COMMAND = "codeIndicator.copySelectionLocationAndSendToActiveTerminal";
+const TOGGLE_VIEW_COMMAND = "codeIndicator.toggleView";
+const PANEL_VIEW_ID = "codeIndicator.panel";
+const PANEL_FOCUS_COMMAND = `${PANEL_VIEW_ID}.focus`;
+const PANEL_OPEN_COMMAND = `${PANEL_VIEW_ID}.open`;
+const CLOSE_PRIMARY_SIDEBAR_COMMAND = "workbench.action.closeSidebar";
+const VIEW_TOGGLE_SETTLE_MS = 100;
 
 export function activate(context: vscode.ExtensionContext): void {
+  const treeView = vscode.window.createTreeView(PANEL_VIEW_ID, {
+    treeDataProvider: new EmptyCodeIndicatorProvider()
+  });
+
   context.subscriptions.push(
+    treeView,
     vscode.commands.registerCommand(SEND_COMMAND, sendSelectionLocationToActiveTerminal),
     vscode.commands.registerCommand(COPY_COMMAND, copySelectionLocation),
-    vscode.commands.registerCommand(COPY_AND_SEND_COMMAND, copySelectionLocationAndSendToActiveTerminal)
+    vscode.commands.registerCommand(COPY_AND_SEND_COMMAND, copySelectionLocationAndSendToActiveTerminal),
+    vscode.commands.registerCommand(TOGGLE_VIEW_COMMAND, () => toggleCodeIndicatorView(treeView))
   );
 }
 
 export function deactivate(): void {
   // No resources to dispose.
+}
+
+class EmptyCodeIndicatorProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+  getChildren(): vscode.TreeItem[] {
+    return [];
+  }
+
+  getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
+    return element;
+  }
+}
+
+async function toggleCodeIndicatorView(treeView: vscode.TreeView<vscode.TreeItem>): Promise<void> {
+  if (!treeView.visible) {
+    await vscode.commands.executeCommand(PANEL_FOCUS_COMMAND);
+    return;
+  }
+
+  await vscode.commands.executeCommand(PANEL_FOCUS_COMMAND);
+  await vscode.commands.executeCommand(PANEL_OPEN_COMMAND);
+  await sleep(VIEW_TOGGLE_SETTLE_MS);
+
+  if (treeView.visible) {
+    await vscode.commands.executeCommand(CLOSE_PRIMARY_SIDEBAR_COMMAND);
+  }
+}
+
+function sleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 async function sendSelectionLocationToActiveTerminal(): Promise<void> {
