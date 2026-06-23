@@ -28,7 +28,9 @@
   "activationEvents": [
     "onCommand:codeIndicator.sendSelectionLocationToActiveTerminal",
     "onCommand:codeIndicator.copySelectionLocation",
-    "onCommand:codeIndicator.copySelectionLocationAndSendToActiveTerminal"
+    "onCommand:codeIndicator.copySelectionLocationAndSendToActiveTerminal",
+    "onCommand:codeIndicator.toggleView",
+    "onView:codeIndicator.panel"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
@@ -90,8 +92,31 @@
         "command": "codeIndicator.copySelectionLocationAndSendToActiveTerminal",
         "title": "Copy and Send Location to Terminal",
         "category": "Code Indicator"
+      },
+      {
+        "command": "codeIndicator.toggleView",
+        "title": "Toggle Code Indicator View",
+        "category": "Code Indicator"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codeIndicator",
+          "title": "Code Indicator",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "codeIndicator": [
+        {
+          "id": "codeIndicator.panel",
+          "name": "Code Indicator",
+          "visibility": "visible"
+        }
+      ]
+    },
     "menus": {
       "editor/context": [
         {
