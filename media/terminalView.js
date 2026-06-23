@@ -8,7 +8,9 @@
   const terminal = new Terminal({
     allowTransparency: true,
     cursorBlink: true,
+    cursorInactiveStyle: "none",
     convertEol: true,
+    disableStdin: false,
     fontFamily: styles.getPropertyValue("--vscode-editor-font-family") || "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
     fontSize: Number.parseInt(styles.getPropertyValue("--vscode-editor-font-size"), 10) || 13,
     theme: {
@@ -20,6 +22,7 @@
   let lastCols = 0;
   let lastRows = 0;
   let resizeTimer = 0;
+  let terminalLive = true;
 
   terminal.loadAddon(fitAddon);
   terminal.open(terminalContainer);
@@ -28,10 +31,11 @@
   });
 
   restartButton.addEventListener("click", () => {
+    syncTerminalState("starting");
     resetTerminal();
     setStatus("Terminal is starting", false, false);
     vscode.postMessage({ type: "restart" });
-    terminal.focus();
+    focusTerminal();
   });
 
   window.addEventListener("message", (event) => {
@@ -45,8 +49,7 @@
         resetTerminal();
         break;
       case "focus":
-        terminal.focus();
-        postFocusState(true);
+        focusTerminal();
         break;
       case "data":
         if (typeof message.data === "string" && message.data.length > 0) {
@@ -59,15 +62,17 @@
           message.state === "exited" || message.state === "error" || message.state === "stopped",
           message.state === "exited" || message.state === "error"
         );
+        syncTerminalState(message.state);
         break;
       case "exit":
         setStatus("Terminal exited", true, true);
+        syncTerminalState("exited");
         break;
     }
   });
 
   window.addEventListener("focus", () => {
-    postFocusState(true);
+    focusTerminal();
   });
 
   window.addEventListener("blur", () => {
@@ -82,8 +87,7 @@
 
   requestAnimationFrame(() => {
     fitAndNotify();
-    terminal.focus();
-    postFocusState(true);
+    focusTerminal();
     vscode.postMessage({ type: "ready" });
   });
 
@@ -116,6 +120,28 @@
   function resetTerminal() {
     terminal.reset();
     fitAndNotify();
+  }
+
+  function syncTerminalState(state) {
+    terminalLive = state === "starting" || state === "ready";
+    terminal.options.cursorBlink = terminalLive;
+    terminal.options.cursorInactiveStyle = terminalLive ? "outline" : "none";
+    terminal.options.disableStdin = !terminalLive;
+    terminalContainer.classList.toggle("terminal-inactive", !terminalLive);
+    if (!terminalLive) {
+      terminal.blur();
+    }
+  }
+
+  function focusTerminal() {
+    if (terminalLive) {
+      terminal.focus();
+      postFocusState(true);
+      return;
+    }
+
+    terminal.blur();
+    postFocusState(false);
   }
 
   function postFocusState(focused) {

@@ -33,6 +33,10 @@ body {
   background: transparent;
 }
 
+#terminal.terminal-inactive .xterm-cursor {
+  display: none !important;
+}
+
 .status-panel {
   position: absolute;
   left: 8px;
