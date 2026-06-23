@@ -192,10 +192,14 @@ test("restart kills the current PTY, clears output, and spawns a new PTY", () =>
   const firstPty = new FakePty();
   const secondPty = new FakePty();
   const ptys = [firstPty, secondPty];
+  let clearCount = 0;
   const session = new PtyTerminalSession({
     ptyFactory: () => ptys.shift() ?? new FakePty()
   });
 
+  session.onClear(() => {
+    clearCount += 1;
+  });
   session.ensureStarted();
   firstPty.emitData("old output");
 
@@ -204,6 +208,7 @@ test("restart kills the current PTY, clears output, and spawns a new PTY", () =>
   assert.equal(firstPty.killed, true);
   assert.equal(session.isLive(), true);
   assert.equal(session.getBufferedOutput(), "");
+  assert.equal(clearCount, 1);
   assert.equal(ptys.length, 0);
 });
 

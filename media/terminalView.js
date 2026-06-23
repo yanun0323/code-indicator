@@ -28,7 +28,7 @@
   });
 
   restartButton.addEventListener("click", () => {
-    terminal.clear();
+    resetTerminal();
     setStatus("Terminal is starting", false, false);
     vscode.postMessage({ type: "restart" });
     terminal.focus();
@@ -42,7 +42,7 @@
 
     switch (message.type) {
       case "clear":
-        terminal.clear();
+        resetTerminal();
         break;
       case "focus":
         terminal.focus();
@@ -111,6 +111,11 @@
     statusText.textContent = message || "";
     restartButton.hidden = !showRestart;
     statusPanel.classList.toggle("visible", Boolean(message) && showPanel);
+  }
+
+  function resetTerminal() {
+    terminal.reset();
+    fitAndNotify();
   }
 
   function postFocusState(focused) {
