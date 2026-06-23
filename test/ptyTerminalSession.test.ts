@@ -71,6 +71,7 @@ test("starts a PTY with shell, cwd, and terminal environment", () => {
   assert.equal(spawnCalls[0].file, "/bin/zsh");
   assert.deepEqual(spawnCalls[0].args, []);
   assert.equal(spawnCalls[0].options.cwd, "/workspace");
+  assert.equal(spawnCalls[0].options.env.PWD, "/workspace");
   assert.equal(spawnCalls[0].options.env.PATH, "/usr/bin");
   assert.equal(spawnCalls[0].options.env.TERM, "xterm-256color");
   assert.equal(spawnCalls[0].options.env.COLORTERM, "truecolor");

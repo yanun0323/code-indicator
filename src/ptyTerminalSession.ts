@@ -122,13 +122,15 @@ export class PtyTerminalSession {
     });
 
     try {
+      const cwd = this.cwdResolver();
       const pty = this.ptyFactory(this.shell, [], {
         name: "xterm-256color",
         cols: this.cols,
         rows: this.rows,
-        cwd: this.cwdResolver(),
+        cwd,
         env: {
           ...this.env,
+          PWD: cwd,
           TERM: "xterm-256color",
           COLORTERM: "truecolor",
           TERM_PROGRAM: "code-indicator"
