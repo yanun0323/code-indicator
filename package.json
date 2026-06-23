@@ -33,6 +33,7 @@
     "onCommand:codeIndicator.spawnTerminal",
     "onCommand:codeIndicator.killTerminal",
     "onCommand:codeIndicator.restartTerminal",
+    "onCommand:codeIndicator.openSettings",
     "onView:codeIndicator.panel"
   ],
   "main": "./out/src/extension.js",
@@ -126,6 +127,12 @@
         "title": "Restart Terminal",
         "category": "Code Indicator",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "codeIndicator.openSettings",
+        "title": "Open Settings",
+        "category": "Code Indicator",
+        "icon": "$(gear)"
       }
     ],
     "viewsContainers": {
@@ -180,6 +187,11 @@
           "command": "codeIndicator.restartTerminal",
           "when": "view == codeIndicator.panel",
           "group": "navigation@3"
+        },
+        {
+          "command": "codeIndicator.openSettings",
+          "when": "view == codeIndicator.panel",
+          "group": "navigation@4"
         }
       ]
     }

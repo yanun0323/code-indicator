@@ -13,6 +13,7 @@ const TOGGLE_VIEW_COMMAND = "codeIndicator.toggleView";
 const SPAWN_TERMINAL_COMMAND = "codeIndicator.spawnTerminal";
 const KILL_TERMINAL_COMMAND = "codeIndicator.killTerminal";
 const RESTART_TERMINAL_COMMAND = "codeIndicator.restartTerminal";
+const OPEN_SETTINGS_COMMAND = "codeIndicator.openSettings";
 const PANEL_VIEW_ID = "codeIndicator.panel";
 const PANEL_FOCUS_COMMAND = `${PANEL_VIEW_ID}.focus`;
 const VIEW_FOCUSED_CONTEXT = "codeIndicator.viewFocused";
@@ -50,7 +51,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(TOGGLE_VIEW_COMMAND, toggleCodeIndicatorView),
     vscode.commands.registerCommand(SPAWN_TERMINAL_COMMAND, spawnTerminal),
     vscode.commands.registerCommand(KILL_TERMINAL_COMMAND, killTerminal),
-    vscode.commands.registerCommand(RESTART_TERMINAL_COMMAND, restartTerminal)
+    vscode.commands.registerCommand(RESTART_TERMINAL_COMMAND, restartTerminal),
+    vscode.commands.registerCommand(OPEN_SETTINGS_COMMAND, () => openCodeIndicatorSettings(context.extension.id))
   );
   updateTerminalLifecycleContext(terminalSession.getStatus());
   updateViewFocusContext(false);
@@ -81,6 +83,10 @@ async function killTerminal(): Promise<void> {
 async function restartTerminal(): Promise<void> {
   await focusCodeIndicatorView();
   terminalSession?.restart({ startupCommand: getTerminalStartupCommand() });
+}
+
+async function openCodeIndicatorSettings(extensionId: string): Promise<void> {
+  await vscode.commands.executeCommand("workbench.action.openSettings", `@ext:${extensionId}`);
 }
 
 async function sendSelectionLocationToActiveTerminal(): Promise<void> {
