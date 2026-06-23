@@ -110,6 +110,40 @@ test("does not spawn a second PTY when one is already live", () => {
   assert.equal(session.isLive(), true);
 });
 
+test("runs the startup command after spawning a PTY", () => {
+  const fakePty = new FakePty();
+  const session = new PtyTerminalSession({
+    ptyFactory: () => fakePty
+  });
+
+  assert.equal(session.spawn({ startupCommand: "echo ready" }), true);
+
+  assert.deepEqual(fakePty.writes, ["echo ready\r"]);
+});
+
+test("does not run an empty startup command", () => {
+  const fakePty = new FakePty();
+  const session = new PtyTerminalSession({
+    ptyFactory: () => fakePty
+  });
+
+  assert.equal(session.spawn({ startupCommand: "   " }), true);
+
+  assert.deepEqual(fakePty.writes, []);
+});
+
+test("does not rerun the startup command when spawn is called while live", () => {
+  const fakePty = new FakePty();
+  const session = new PtyTerminalSession({
+    ptyFactory: () => fakePty
+  });
+
+  assert.equal(session.spawn({ startupCommand: "echo first" }), true);
+  assert.equal(session.spawn({ startupCommand: "echo second" }), true);
+
+  assert.deepEqual(fakePty.writes, ["echo first\r"]);
+});
+
 test("resizes an active PTY and preserves dimensions for startup", () => {
   const fakePty = new FakePty();
   let startupOptions: PtySpawnOptions | undefined;
@@ -210,6 +244,22 @@ test("restart kills the current PTY, clears output, and spawns a new PTY", () =>
   assert.equal(session.getBufferedOutput(), "");
   assert.equal(clearCount, 1);
   assert.equal(ptys.length, 0);
+});
+
+test("restart runs the startup command only on the new PTY", () => {
+  const firstPty = new FakePty();
+  const secondPty = new FakePty();
+  const ptys = [firstPty, secondPty];
+  const session = new PtyTerminalSession({
+    ptyFactory: () => ptys.shift() ?? new FakePty()
+  });
+
+  session.ensureStarted();
+
+  assert.equal(session.restart({ startupCommand: "echo restarted" }), true);
+
+  assert.deepEqual(firstPty.writes, []);
+  assert.deepEqual(secondPty.writes, ["echo restarted\r"]);
 });
 
 test("returns false and reports an error when PTY startup throws", () => {

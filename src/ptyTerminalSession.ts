@@ -44,6 +44,10 @@ export interface TerminalSessionOptions {
   readonly maxBufferedBytes?: number;
 }
 
+export interface TerminalStartupOptions {
+  readonly startupCommand?: string;
+}
+
 export class PtyTerminalSession {
   private readonly ptyFactory: PtyFactory;
   private readonly cwdResolver: () => string;
@@ -107,11 +111,11 @@ export class PtyTerminalSession {
     return this.pty !== undefined;
   }
 
-  ensureStarted(): boolean {
-    return this.spawn();
+  ensureStarted(options: TerminalStartupOptions = {}): boolean {
+    return this.spawn(options);
   }
 
-  spawn(): boolean {
+  spawn(options: TerminalStartupOptions = {}): boolean {
     if (this.pty) {
       return true;
     }
@@ -144,6 +148,7 @@ export class PtyTerminalSession {
         state: "ready",
         message: "Terminal is connected"
       });
+      this.runStartupCommand(options.startupCommand);
       return true;
     } catch {
       this.cleanupPty();
@@ -173,14 +178,14 @@ export class PtyTerminalSession {
     }
   }
 
-  restart(): boolean {
+  restart(options: TerminalStartupOptions = {}): boolean {
     this.clear();
     if (this.pty) {
       this.pty.kill();
       this.cleanupPty();
     }
 
-    return this.spawn();
+    return this.spawn(options);
   }
 
   kill(): boolean {
@@ -249,6 +254,14 @@ export class PtyTerminalSession {
     for (const listener of this.clearListeners) {
       listener();
     }
+  }
+
+  private runStartupCommand(startupCommand: string | undefined): void {
+    if (!startupCommand || startupCommand.trim().length === 0) {
+      return;
+    }
+
+    this.pty?.write(`${startupCommand}\r`);
   }
 
   private cleanupPty(): void {
