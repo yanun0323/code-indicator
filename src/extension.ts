@@ -212,6 +212,11 @@ function updateViewFocusContext(focused: boolean): void {
 }
 
 function getTerminalStartupCwd(): string {
+  const firstWorkspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (firstWorkspaceFolder) {
+    return firstWorkspaceFolder.uri.fsPath;
+  }
+
   const editor = vscode.window.activeTextEditor;
   if (editor) {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
@@ -220,6 +225,5 @@ function getTerminalStartupCwd(): string {
     }
   }
 
-  const firstWorkspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  return firstWorkspaceFolder?.uri.fsPath ?? os.homedir();
+  return os.homedir();
 }
