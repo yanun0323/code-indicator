@@ -1,0 +1,80 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--vscode-terminal-foreground, #cccccc);
+}
+
+body {
+  position: relative;
+  font-family: var(--vscode-editor-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+}
+
+#terminal {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 8px 8px 8px 20px;
+}
+
+#terminal .xterm {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+#terminal .xterm-viewport,
+#terminal .xterm-screen,
+#terminal .xterm-rows {
+  background: transparent;
+}
+
+.status-panel {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  color: var(--vscode-descriptionForeground, #cccccc);
+  background: color-mix(in srgb, var(--vscode-editor-background, #101010) 86%, transparent);
+  border: 1px solid var(--vscode-panel-border, #333333);
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-in-out;
+}
+
+.status-panel.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#statusText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#restartButton {
+  flex: 0 0 auto;
+  min-height: 22px;
+  padding: 2px 8px;
+  color: var(--vscode-button-foreground, #ffffff);
+  background: var(--vscode-button-background, #0e639c);
+  border: 0;
+  border-radius: 2px;
+}
+
+#restartButton:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
