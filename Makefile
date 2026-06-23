@@ -39,6 +39,10 @@ clean:
 package:
 	$(VSCE) package
 
+## login:
+login:
+	$(VSCE) login Yanun
+
 ## publish: publish the extension to VS Code Marketplace
 publish:
 	$(VSCE) publish
