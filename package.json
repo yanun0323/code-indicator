@@ -2,7 +2,7 @@
   "name": "code-indicator",
   "displayName": "Code Indicator",
   "description": "Copy or send the current selection location in an rg-friendly format.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "Yanun",
   "license": "SEE LICENSE IN LICENSE",
   "icon": "media/icon.png",
