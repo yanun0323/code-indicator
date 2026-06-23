@@ -140,7 +140,7 @@
         {
           "id": "codeIndicator",
           "title": "Code Indicator",
-          "icon": "media/icon.png"
+          "icon": "$(console)"
         }
       ]
     },
