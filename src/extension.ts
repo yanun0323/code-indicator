@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext): void {
   terminalSession = new PtyTerminalSession({
     cwdResolver: getTerminalStartupCwd
   });
-  terminalViewProvider = new CodeIndicatorTerminalViewProvider(context.extensionUri, terminalSession);
+  terminalViewProvider = new CodeIndicatorTerminalViewProvider(context.extensionUri, terminalSession, getTerminalStartupCommand);
 
   context.subscriptions.push(
     terminalSession,
@@ -71,7 +71,7 @@ async function toggleCodeIndicatorView(): Promise<void> {
 
 async function spawnTerminal(): Promise<void> {
   await focusCodeIndicatorView();
-  terminalSession?.spawn();
+  terminalSession?.spawn({ startupCommand: getTerminalStartupCommand() });
 }
 
 async function killTerminal(): Promise<void> {
@@ -80,7 +80,7 @@ async function killTerminal(): Promise<void> {
 
 async function restartTerminal(): Promise<void> {
   await focusCodeIndicatorView();
-  terminalSession?.restart();
+  terminalSession?.restart({ startupCommand: getTerminalStartupCommand() });
 }
 
 async function sendSelectionLocationToActiveTerminal(): Promise<void> {
@@ -167,13 +167,17 @@ function shouldFocusTerminalAfterSend(): boolean {
   return vscode.workspace.getConfiguration("codeIndicator").get<boolean>("terminal.focusAfterSend", true);
 }
 
+function getTerminalStartupCommand(): string {
+  return vscode.workspace.getConfiguration("codeIndicator").get<string>("terminal.startupCommand", "");
+}
+
 function updateTerminalLifecycleContext(status: ReturnType<PtyTerminalSession["getStatus"]>): void {
   void vscode.commands.executeCommand("setContext", "codeIndicator.terminalLive", status.state === "starting" || status.state === "ready");
 }
 
 function spawnStoppedTerminal(): void {
   if (terminalSession?.getStatus().state === "stopped") {
-    terminalSession.spawn();
+    terminalSession.spawn({ startupCommand: getTerminalStartupCommand() });
   }
 }
 

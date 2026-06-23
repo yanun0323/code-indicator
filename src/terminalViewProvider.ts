@@ -19,7 +19,8 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
 
   constructor(
     private readonly extensionUri: vscode.Uri,
-    private readonly session: PtyTerminalSession
+    private readonly session: PtyTerminalSession,
+    private readonly startupCommandResolver: () => string | undefined = () => undefined
   ) {
     this.disposables.push(
       toVsCodeDisposable(
@@ -76,7 +77,7 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
           this.focusEmitter.fire(false);
         }
         if (webviewView.visible && this.webviewReady && this.session.getStatus().state === "stopped") {
-          this.session.spawn();
+          this.session.spawn({ startupCommand: this.startupCommandResolver() });
         }
       }),
       webviewView.webview.onDidReceiveMessage((message: unknown) => this.handleMessage(message))
@@ -126,7 +127,7 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
         }
         break;
       case TERMINAL_RESTART_TYPE:
-        this.session.restart();
+        this.session.restart({ startupCommand: this.startupCommandResolver() });
         break;
       case TERMINAL_FOCUS_CHANGED_TYPE:
         if (typeof message.focused === "boolean") {
@@ -139,7 +140,7 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
   private startTerminalForReadyView(): boolean {
     const state = this.session.getStatus().state;
     if (state === "idle" || state === "stopped") {
-      return this.session.ensureStarted();
+      return this.session.ensureStarted({ startupCommand: this.startupCommandResolver() });
     }
 
     return false;
