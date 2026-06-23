@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
+import os from "node:os";
+
+import { PtyTerminalSession } from "./ptyTerminalSession";
 import { formatSelectionLocation } from "./selectionLocation";
-import { getTerminalSendText } from "./terminalSendText";
+import { sendLocationToTerminal } from "./terminalRouting";
+import { CodeIndicatorTerminalViewProvider } from "./terminalViewProvider";
 
 const SEND_COMMAND = "codeIndicator.sendSelectionLocationToActiveTerminal";
 const COPY_COMMAND = "codeIndicator.copySelectionLocation";
@@ -11,37 +15,38 @@ const PANEL_FOCUS_COMMAND = `${PANEL_VIEW_ID}.focus`;
 const PANEL_OPEN_COMMAND = `${PANEL_VIEW_ID}.open`;
 const CLOSE_PRIMARY_SIDEBAR_COMMAND = "workbench.action.closeSidebar";
 const VIEW_TOGGLE_SETTLE_MS = 100;
+let terminalSession: PtyTerminalSession | undefined;
+let terminalViewProvider: CodeIndicatorTerminalViewProvider | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
-  const treeView = vscode.window.createTreeView(PANEL_VIEW_ID, {
-    treeDataProvider: new EmptyCodeIndicatorProvider()
+  terminalSession = new PtyTerminalSession({
+    cwdResolver: getTerminalStartupCwd
   });
+  terminalViewProvider = new CodeIndicatorTerminalViewProvider(context.extensionUri, terminalSession);
 
   context.subscriptions.push(
-    treeView,
+    terminalSession,
+    terminalViewProvider,
+    vscode.window.registerWebviewViewProvider(PANEL_VIEW_ID, terminalViewProvider, {
+      webviewOptions: {
+        retainContextWhenHidden: true
+      }
+    }),
     vscode.commands.registerCommand(SEND_COMMAND, sendSelectionLocationToActiveTerminal),
     vscode.commands.registerCommand(COPY_COMMAND, copySelectionLocation),
     vscode.commands.registerCommand(COPY_AND_SEND_COMMAND, copySelectionLocationAndSendToActiveTerminal),
-    vscode.commands.registerCommand(TOGGLE_VIEW_COMMAND, () => toggleCodeIndicatorView(treeView))
+    vscode.commands.registerCommand(TOGGLE_VIEW_COMMAND, toggleCodeIndicatorView)
   );
 }
 
 export function deactivate(): void {
-  // No resources to dispose.
+  terminalSession?.dispose();
+  terminalSession = undefined;
+  terminalViewProvider = undefined;
 }
 
-class EmptyCodeIndicatorProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
-  getChildren(): vscode.TreeItem[] {
-    return [];
-  }
-
-  getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
-    return element;
-  }
-}
-
-async function toggleCodeIndicatorView(treeView: vscode.TreeView<vscode.TreeItem>): Promise<void> {
-  if (!treeView.visible) {
+async function toggleCodeIndicatorView(): Promise<void> {
+  if (!terminalViewProvider?.visible) {
     await vscode.commands.executeCommand(PANEL_FOCUS_COMMAND);
     return;
   }
@@ -50,7 +55,7 @@ async function toggleCodeIndicatorView(treeView: vscode.TreeView<vscode.TreeItem
   await vscode.commands.executeCommand(PANEL_OPEN_COMMAND);
   await sleep(VIEW_TOGGLE_SETTLE_MS);
 
-  if (treeView.visible) {
+  if (terminalViewProvider.visible) {
     await vscode.commands.executeCommand(CLOSE_PRIMARY_SIDEBAR_COMMAND);
   }
 }
@@ -65,7 +70,7 @@ async function sendSelectionLocationToActiveTerminal(): Promise<void> {
     return;
   }
 
-  sendToActiveTerminal(selectionLocation);
+  await sendToTerminal(selectionLocation);
 }
 
 async function copySelectionLocation(): Promise<void> {
@@ -84,7 +89,7 @@ async function copySelectionLocationAndSendToActiveTerminal(): Promise<void> {
   }
 
   await copyToClipboard(selectionLocation);
-  sendToActiveTerminal(selectionLocation);
+  await sendToTerminal(selectionLocation);
 }
 
 function getActiveSelectionLocation(): string | undefined {
@@ -123,18 +128,16 @@ async function copyToClipboard(value: string): Promise<void> {
   vscode.window.showInformationMessage("Location copied.");
 }
 
-function sendToActiveTerminal(value: string): void {
-  const terminal = vscode.window.activeTerminal;
-  if (!terminal) {
-    vscode.window.showWarningMessage("No active terminal.");
-    return;
-  }
-
-  const sendText = getTerminalSendText(value, getTerminalTrailingCharacter());
-  terminal.sendText(sendText.text, sendText.addNewLine);
-  if (shouldFocusTerminalAfterSend()) {
-    terminal.show(false);
-  }
+async function sendToTerminal(value: string): Promise<void> {
+  await sendLocationToTerminal({
+    value,
+    trailingCharacter: getTerminalTrailingCharacter(),
+    focusAfterSend: shouldFocusTerminalAfterSend(),
+    embeddedTerminal: terminalSession,
+    activeTerminal: vscode.window.activeTerminal,
+    focusEmbeddedTerminal: focusCodeIndicatorView,
+    warnNoActiveTerminal: () => vscode.window.showWarningMessage("No active terminal.")
+  });
 }
 
 function getTerminalTrailingCharacter(): string {
@@ -143,4 +146,21 @@ function getTerminalTrailingCharacter(): string {
 
 function shouldFocusTerminalAfterSend(): boolean {
   return vscode.workspace.getConfiguration("codeIndicator").get<boolean>("terminal.focusAfterSend", true);
+}
+
+async function focusCodeIndicatorView(): Promise<void> {
+  await vscode.commands.executeCommand(PANEL_FOCUS_COMMAND);
+}
+
+function getTerminalStartupCwd(): string {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) {
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+    if (workspaceFolder) {
+      return workspaceFolder.uri.fsPath;
+    }
+  }
+
+  const firstWorkspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  return firstWorkspaceFolder?.uri.fsPath ?? os.homedir();
 }
