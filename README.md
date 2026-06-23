@@ -26,7 +26,7 @@ Each command is available from the Command Palette, editor context menu, and VS 
 
 ## Settings
 
-The editor context menu items can be shown or hidden individually. Terminal focus after sending is enabled by default. The trailing character sent to the terminal defaults to a space.
+The editor context menu items can be shown or hidden individually. Terminal focus after sending is enabled by default. The trailing character sent to the terminal defaults to a space. The terminal startup command is optional and runs when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view.
 
 ```json
 {
@@ -34,6 +34,7 @@ The editor context menu items can be shown or hidden individually. Terminal focu
   "codeIndicator.contextMenu.sendLocationToTerminal": true,
   "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true,
   "codeIndicator.terminal.focusAfterSend": true,
+  "codeIndicator.terminal.startupCommand": "",
   "codeIndicator.terminal.trailingCharacter": "space"
 }
 ```

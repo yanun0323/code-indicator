@@ -64,6 +64,12 @@
           "scope": "resource",
           "description": "Focus the active terminal after sending a location."
         },
+        "codeIndicator.terminal.startupCommand": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Run this command when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view. Leave empty to run nothing."
+        },
         "codeIndicator.terminal.trailingCharacter": {
           "type": "string",
           "enum": [
