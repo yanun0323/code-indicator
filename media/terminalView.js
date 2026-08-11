@@ -4,6 +4,7 @@
   const statusPanel = document.getElementById("statusPanel");
   const statusText = document.getElementById("statusText");
   const restartButton = document.getElementById("restartButton");
+  const maxPastedImageBytes = Number(terminalContainer.dataset.maxPastedImageBytes);
   const styles = getComputedStyle(document.documentElement);
   const terminal = new Terminal({
     allowTransparency: true,
@@ -26,6 +27,7 @@
 
   terminal.loadAddon(fitAddon);
   terminal.open(terminalContainer);
+  terminal.element.addEventListener("paste", handleImagePaste, true);
   terminal.onData((data) => {
     vscode.postMessage({ type: "input", data });
   });
@@ -149,5 +151,67 @@
       type: "focusChanged",
       focused
     });
+  }
+
+  function handleImagePaste(event) {
+    const pastedImage = getPastedImage(event);
+    if (!pastedImage) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (pastedImage.file.size > maxPastedImageBytes) {
+      vscode.postMessage({ type: "pasteImageTooLarge" });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      if (typeof reader.result !== "string") {
+        postImageReadError();
+        return;
+      }
+
+      const separatorIndex = reader.result.indexOf(",");
+      if (separatorIndex < 0) {
+        postImageReadError();
+        return;
+      }
+
+      vscode.postMessage({
+        type: "pasteImage",
+        mediaType: pastedImage.mediaType,
+        base64: reader.result.slice(separatorIndex + 1)
+      });
+    });
+    reader.addEventListener("error", postImageReadError);
+    reader.readAsDataURL(pastedImage.file);
+  }
+
+  function getPastedImage(event) {
+    const items = event.clipboardData?.items;
+    if (!items) {
+      return undefined;
+    }
+
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+      if (item.kind !== "file" || !item.type.startsWith("image/")) {
+        continue;
+      }
+
+      const file = item.getAsFile();
+      if (file) {
+        return { file, mediaType: item.type };
+      }
+    }
+
+    return undefined;
+  }
+
+  function postImageReadError() {
+    vscode.postMessage({ type: "pasteImageReadError" });
   }
 })();

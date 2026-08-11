@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.6
+
+- Save images pasted into the embedded terminal and insert Markdown image links.
+- Add custom image directory settings with automatic fallback to `.tmp/images`.
+- Support PNG, JPEG, GIF, WebP, BMP, AVIF, TIFF, and SVG images up to 20 MB.
+- Group settings into Terminal, Image Paste, and Context Menu in a fixed order.
+
 ## 1.0.5
 
 - Fix embedded terminal layout sizing inside the Code Indicator view.

@@ -1,5 +1,12 @@
 import * as vscode from "vscode";
 
+import {
+  MAX_PASTED_IMAGE_BYTES,
+  PASTED_IMAGE_READ_ERROR_MESSAGE,
+  PASTED_IMAGE_TOO_LARGE_MESSAGE,
+  PastedImageError,
+  savePastedImage
+} from "./pastedImage";
 import { PtyTerminalSession, TerminalSessionStatus } from "./ptyTerminalSession";
 
 const TERMINAL_READY_TYPE = "ready";
@@ -7,6 +14,9 @@ const TERMINAL_INPUT_TYPE = "input";
 const TERMINAL_RESIZE_TYPE = "resize";
 const TERMINAL_RESTART_TYPE = "restart";
 const TERMINAL_FOCUS_CHANGED_TYPE = "focusChanged";
+const TERMINAL_PASTE_IMAGE_TYPE = "pasteImage";
+const TERMINAL_PASTE_IMAGE_READ_ERROR_TYPE = "pasteImageReadError";
+const TERMINAL_PASTE_IMAGE_TOO_LARGE_TYPE = "pasteImageTooLarge";
 
 export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   private readonly visibilityEmitter = new vscode.EventEmitter<boolean>();
@@ -134,6 +144,60 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
           this.focusEmitter.fire(message.focused);
         }
         break;
+      case TERMINAL_PASTE_IMAGE_TYPE:
+        if (typeof message.mediaType === "string" && typeof message.base64 === "string") {
+          void this.handlePastedImage(message.mediaType, message.base64);
+        }
+        break;
+      case TERMINAL_PASTE_IMAGE_READ_ERROR_TYPE:
+        void vscode.window.showErrorMessage(PASTED_IMAGE_READ_ERROR_MESSAGE);
+        break;
+      case TERMINAL_PASTE_IMAGE_TOO_LARGE_TYPE:
+        void vscode.window.showErrorMessage(PASTED_IMAGE_TOO_LARGE_MESSAGE);
+        break;
+    }
+  }
+
+  private async handlePastedImage(mediaType: string, base64: string): Promise<void> {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+      void vscode.window.showErrorMessage("Open a workspace folder before you paste an image.");
+      return;
+    }
+
+    if (!this.session.isLive()) {
+      void vscode.window.showErrorMessage("Start the Code Indicator terminal before you paste an image.");
+      return;
+    }
+
+    const configuration = vscode.workspace.getConfiguration("codeIndicator", workspaceFolder.uri);
+    const customImageDirectory = configuration.get<boolean>("useCustomImageDirectory", false)
+      ? configuration.get<string>("customImageDirectory", "")
+      : undefined;
+
+    try {
+      const savedImage = await savePastedImage({
+        projectDirectory: workspaceFolder.uri.fsPath,
+        customImageDirectory,
+        mediaType,
+        base64
+      });
+      if (savedImage.usedFallbackDirectory) {
+        void vscode.window.showWarningMessage(
+          "Unable to use Custom Image Directory. Check the path and permissions. The image was saved in .tmp/images."
+        );
+      }
+      if (!this.session.write(savedImage.markdown)) {
+        void vscode.window.showErrorMessage(
+          "The image was saved, but the terminal stopped before Code Indicator pasted the link. Start the terminal and paste the image again."
+        );
+      }
+    } catch (error) {
+      const message =
+        error instanceof PastedImageError
+          ? error.message
+          : "Unable to save the pasted image. Check the workspace permissions and try again.";
+      void vscode.window.showErrorMessage(message);
     }
   }
 
@@ -189,7 +253,7 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
   <title>Code Indicator</title>
 </head>
 <body>
-  <main id="terminal" aria-label="Code Indicator Terminal"></main>
+  <main id="terminal" data-max-pasted-image-bytes="${MAX_PASTED_IMAGE_BYTES}" aria-label="Code Indicator Terminal"></main>
   <section id="statusPanel" class="status-panel" aria-live="polite">
     <span id="statusText">Terminal is starting</span>
     <button id="restartButton" type="button" hidden>Restart</button>

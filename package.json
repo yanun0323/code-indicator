@@ -38,55 +38,96 @@
   ],
   "main": "./out/src/extension.js",
   "contributes": {
-    "configuration": {
-      "title": "Code Indicator",
-      "properties": {
-        "codeIndicator.contextMenu.copyLocation": {
-          "type": "boolean",
-          "default": true,
-          "scope": "resource",
-          "description": "Show Copy Location in the editor context menu."
-        },
-        "codeIndicator.contextMenu.sendLocationToTerminal": {
-          "type": "boolean",
-          "default": true,
-          "scope": "resource",
-          "description": "Show Send Location to Terminal in the editor context menu."
-        },
-        "codeIndicator.contextMenu.copyAndSendLocationToTerminal": {
-          "type": "boolean",
-          "default": true,
-          "scope": "resource",
-          "description": "Show Copy and Send Location to Terminal in the editor context menu."
-        },
-        "codeIndicator.terminal.focusAfterSend": {
-          "type": "boolean",
-          "default": true,
-          "scope": "resource",
-          "description": "Focus the active terminal after sending a location."
-        },
-        "codeIndicator.terminal.startupCommand": {
-          "type": "string",
-          "default": "",
-          "scope": "resource",
-          "description": "Run this command when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view. Leave empty to run nothing."
-        },
-        "codeIndicator.terminal.trailingCharacter": {
-          "type": "string",
-          "enum": [
-            "space",
-            "newline"
-          ],
-          "default": "space",
-          "scope": "resource",
-          "description": "Choose the trailing character sent after the location.",
-          "enumDescriptions": [
-            "Append a space after the location without submitting the terminal input.",
-            "Submit the terminal input after the location."
-          ]
+    "configuration": [
+      {
+        "title": "Terminal",
+        "id": "codeIndicator.terminal",
+        "order": 1,
+        "type": "object",
+        "properties": {
+          "codeIndicator.terminal.startupCommand": {
+            "type": "string",
+            "default": "",
+            "order": 1,
+            "scope": "resource",
+            "description": "Run this command when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view. Leave empty to run nothing."
+          },
+          "codeIndicator.terminal.focusAfterSend": {
+            "type": "boolean",
+            "default": true,
+            "order": 2,
+            "scope": "resource",
+            "description": "Focus the active terminal after sending a location."
+          },
+          "codeIndicator.terminal.trailingCharacter": {
+            "type": "string",
+            "enum": [
+              "space",
+              "newline"
+            ],
+            "default": "space",
+            "order": 3,
+            "scope": "resource",
+            "description": "Choose the trailing character sent after the location.",
+            "enumDescriptions": [
+              "Append a space after the location without submitting the terminal input.",
+              "Submit the terminal input after the location."
+            ]
+          }
+        }
+      },
+      {
+        "title": "Image Paste",
+        "id": "codeIndicator",
+        "order": 2,
+        "type": "object",
+        "properties": {
+          "codeIndicator.useCustomImageDirectory": {
+            "type": "boolean",
+            "default": false,
+            "order": 4,
+            "scope": "resource",
+            "description": "Save pasted images in Custom Image Directory."
+          },
+          "codeIndicator.customImageDirectory": {
+            "type": "string",
+            "default": "",
+            "order": 5,
+            "scope": "resource",
+            "description": "Directory for pasted images. Use an absolute path or a path relative to the first workspace folder. Code Indicator uses .tmp/images when this value is empty or unavailable."
+          }
+        }
+      },
+      {
+        "title": "Context Menu",
+        "id": "codeIndicator.contextMenu",
+        "order": 3,
+        "type": "object",
+        "properties": {
+          "codeIndicator.contextMenu.copyLocation": {
+            "type": "boolean",
+            "default": true,
+            "order": 6,
+            "scope": "resource",
+            "description": "Show Copy Location in the editor context menu."
+          },
+          "codeIndicator.contextMenu.sendLocationToTerminal": {
+            "type": "boolean",
+            "default": true,
+            "order": 7,
+            "scope": "resource",
+            "description": "Show Send Location to Terminal in the editor context menu."
+          },
+          "codeIndicator.contextMenu.copyAndSendLocationToTerminal": {
+            "type": "boolean",
+            "default": true,
+            "order": 8,
+            "scope": "resource",
+            "description": "Show Copy and Send Location to Terminal in the editor context menu."
+          }
         }
       }
-    },
+    ],
     "commands": [
       {
         "command": "codeIndicator.sendSelectionLocationToActiveTerminal",

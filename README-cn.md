@@ -35,18 +35,36 @@ Code Indicator 内置 activity bar view 和 embedded terminal。发送位置时�
 
 view toolbar 可以 spawn、kill、restart Code Indicator terminal，或打开 settings。kill terminal 后 view 会保持打开，并清除已停止 session 的输出。
 
+## 图片粘贴
+
+将图片粘贴到 embedded terminal。Code Indicator 会将图片保存在第一个 workspace folder 下的 `.tmp/images`。如果目录不存在，Code Indicator 会创建目录。文件名使用当前的 Unix 毫秒时间戳。
+
+保存成功后，Code Indicator 会插入以下 Markdown 文本。以下 `<space>` 代表一个空格：
+
+```text
+<space>[image](./.tmp/images/1786423812345.png)<space>
+```
+
+Code Indicator 支持 PNG、JPEG、GIF、WebP、BMP、AVIF、TIFF 和 SVG 图片。图片大小上限为 20 MB。
+
 ## Settings
 
-editor context menu 的项目可以单独显示或隐藏。发送到 terminal 后自动 focus terminal 的功能默认开启。发送到 terminal 的最后一个字符默认是空格。terminal startup command 是选填，会在 Code Indicator terminal spawn、reload，或打开 view 自动启动时执行。
+设置分为 Terminal、Image Paste 和 Context Menu 三个分类。terminal startup command 是选填。Code Indicator terminal 会在 spawn、reload，或打开 view 自动启动时执行此 command。发送到 terminal 后自动 focus terminal 的功能默认开启。发送到 terminal 的最后一个字符默认是空格。editor context menu 的项目可以单独显示或隐藏。
+
+如需使用其他图片目录，请启用 `codeIndicator.useCustomImageDirectory`，并设置 `codeIndicator.customImageDirectory`。你可以使用绝对路径，或第一个 workspace folder 的相对路径。如果设置值为空或目录无法使用，Code Indicator 会使用第一个 workspace folder 下的 `.tmp/images`。
+
+图片位于第一个 workspace folder 内时，图片链接会使用相对路径。图片位于第一个 workspace folder 外时，图片链接会使用绝对路径。
 
 ```json
 {
+  "codeIndicator.terminal.startupCommand": "",
+  "codeIndicator.terminal.focusAfterSend": true,
+  "codeIndicator.terminal.trailingCharacter": "space",
+  "codeIndicator.useCustomImageDirectory": false,
+  "codeIndicator.customImageDirectory": "",
   "codeIndicator.contextMenu.copyLocation": true,
   "codeIndicator.contextMenu.sendLocationToTerminal": true,
-  "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true,
-  "codeIndicator.terminal.focusAfterSend": true,
-  "codeIndicator.terminal.startupCommand": "",
-  "codeIndicator.terminal.trailingCharacter": "space"
+  "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true
 }
 ```
 

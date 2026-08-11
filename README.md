@@ -35,18 +35,36 @@ Code Indicator includes an activity bar view with an embedded terminal. Sending 
 
 The view toolbar can spawn, kill, restart, or open settings for the Code Indicator terminal. Killing the terminal keeps the view open and clears the stopped session output.
 
+## Image Paste
+
+Paste an image into the embedded terminal. Code Indicator saves the image in `.tmp/images` under the first workspace folder. Code Indicator creates the directory when necessary. The file name is the current Unix timestamp in milliseconds.
+
+After the save succeeds, Code Indicator inserts this Markdown text. In this example, `<space>` means one space:
+
+```text
+<space>[image](./.tmp/images/1786423812345.png)<space>
+```
+
+Code Indicator supports PNG, JPEG, GIF, WebP, BMP, AVIF, TIFF, and SVG images. The image size limit is 20 MB.
+
 ## Settings
 
-The editor context menu items can be shown or hidden individually. Terminal focus after sending is enabled by default. The trailing character sent to the terminal defaults to a space. The terminal startup command is optional and runs when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view.
+Settings are grouped into Terminal, Image Paste, and Context Menu. The terminal startup command is optional and runs when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view. Terminal focus after sending is enabled by default. The trailing character sent to the terminal defaults to a space. The editor context menu items can be shown or hidden individually.
+
+To use another image directory, enable `codeIndicator.useCustomImageDirectory` and set `codeIndicator.customImageDirectory`. Use an absolute path or a path relative to the first workspace folder. If the value is empty or the directory cannot be used, Code Indicator uses `.tmp/images` under the first workspace folder.
+
+Image links use relative paths for files inside the first workspace folder. Image links use absolute paths for files outside the first workspace folder.
 
 ```json
 {
+  "codeIndicator.terminal.startupCommand": "",
+  "codeIndicator.terminal.focusAfterSend": true,
+  "codeIndicator.terminal.trailingCharacter": "space",
+  "codeIndicator.useCustomImageDirectory": false,
+  "codeIndicator.customImageDirectory": "",
   "codeIndicator.contextMenu.copyLocation": true,
   "codeIndicator.contextMenu.sendLocationToTerminal": true,
-  "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true,
-  "codeIndicator.terminal.focusAfterSend": true,
-  "codeIndicator.terminal.startupCommand": "",
-  "codeIndicator.terminal.trailingCharacter": "space"
+  "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true
 }
 ```
 

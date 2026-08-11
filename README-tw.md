@@ -35,18 +35,36 @@ Code Indicator 內建 activity bar view 與 embedded terminal。傳送位置時�
 
 view toolbar 可以 spawn、kill、restart Code Indicator terminal，或開啟 settings。kill terminal 後 view 會保持開啟，並清除已停止 session 的輸出。
 
+## 圖片貼上
+
+將圖片貼到 embedded terminal。Code Indicator 會將圖片儲存在第一個 workspace folder 下的 `.tmp/images`。如果目錄不存在，Code Indicator 會建立目錄。檔案名稱使用目前的 Unix 毫秒時間戳。
+
+儲存成功後，Code Indicator 會插入下列 Markdown 文字。下列 `<space>` 代表一個空白：
+
+```text
+<space>[image](./.tmp/images/1786423812345.png)<space>
+```
+
+Code Indicator 支援 PNG、JPEG、GIF、WebP、BMP、AVIF、TIFF 和 SVG 圖片。圖片大小上限為 20 MB。
+
 ## Settings
 
-editor context menu 的項目可以個別顯示或隱藏。傳送到 terminal 後自動 focus terminal 的功能預設開啟。送到 terminal 的最後一個字元預設是空白。terminal startup command 是選填，會在 Code Indicator terminal spawn、reload，或開啟 view 自動啟動時執行。
+設定分為 Terminal、Image Paste 和 Context Menu 三個分類。terminal startup command 是選填。Code Indicator terminal 會在 spawn、reload，或開啟 view 自動啟動時執行此 command。傳送到 terminal 後自動 focus terminal 的功能預設開啟。送到 terminal 的最後一個字元預設是空白。editor context menu 的項目可以個別顯示或隱藏。
+
+若要使用其他圖片目錄，請啟用 `codeIndicator.useCustomImageDirectory`，並設定 `codeIndicator.customImageDirectory`。你可以使用絕對路徑，或第一個 workspace folder 的相對路徑。如果設定值是空值或目錄無法使用，Code Indicator 會使用第一個 workspace folder 下的 `.tmp/images`。
+
+圖片位於第一個 workspace folder 內時，圖片連結會使用相對路徑。圖片位於第一個 workspace folder 外時，圖片連結會使用絕對路徑。
 
 ```json
 {
+  "codeIndicator.terminal.startupCommand": "",
+  "codeIndicator.terminal.focusAfterSend": true,
+  "codeIndicator.terminal.trailingCharacter": "space",
+  "codeIndicator.useCustomImageDirectory": false,
+  "codeIndicator.customImageDirectory": "",
   "codeIndicator.contextMenu.copyLocation": true,
   "codeIndicator.contextMenu.sendLocationToTerminal": true,
-  "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true,
-  "codeIndicator.terminal.focusAfterSend": true,
-  "codeIndicator.terminal.startupCommand": "",
-  "codeIndicator.terminal.trailingCharacter": "space"
+  "codeIndicator.contextMenu.copyAndSendLocationToTerminal": true
 }
 ```
 
