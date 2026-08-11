@@ -39,17 +39,19 @@ view toolbar 可以 spawn、kill、restart Code Indicator terminal，或打开 s
 
 将图片粘贴到 embedded terminal。Code Indicator 会将图片保存在第一个 workspace folder 下的 `.tmp/images`。如果目录不存在，Code Indicator 会创建目录。文件名使用当前的 Unix 毫秒时间戳。
 
-保存成功后，Code Indicator 会插入以下 Markdown 文本。以下 `<space>` 代表一个空格：
+图片保存成功后，Code Indicator 会插入 Markdown 图片链接。Code Indicator 不会在链接前添加空格。`codeIndicator.terminal.trailingCharacter` 会控制链接后缀。默认的 `space` 设置会产生以下文本：
 
 ```text
-<space>[image](./.tmp/images/1786423812345.png)<space>
+[image](./.tmp/images/1786423812345.png)<space>
 ```
+
+如果设置为 `newline`，Code Indicator 会在插入链接后提交 terminal input。
 
 Code Indicator 支持 PNG、JPEG、GIF、WebP、BMP、AVIF、TIFF 和 SVG 图片。图片大小上限为 20 MB。
 
 ## Settings
 
-设置分为 Terminal、Image Paste 和 Context Menu 三个分类。terminal startup command 是选填。Code Indicator terminal 会在 spawn、reload，或打开 view 自动启动时执行此 command。发送到 terminal 后自动 focus terminal 的功能默认开启。发送到 terminal 的最后一个字符默认是空格。editor context menu 的项目可以单独显示或隐藏。
+设置分为 Terminal、Image Paste 和 Context Menu 三个分类。terminal startup command 是选填。Code Indicator terminal 会在 spawn、reload，或打开 view 自动启动时执行此 command。发送到 terminal 后自动 focus terminal 的功能默认开启。Code location 或 Markdown 图片链接的后缀默认是空格。editor context menu 的项目可以单独显示或隐藏。
 
 如需使用其他图片目录，请启用 `codeIndicator.useCustomImageDirectory`，并设置 `codeIndicator.customImageDirectory`。你可以使用绝对路径，或第一个 workspace folder 的相对路径。如果设置值为空或目录无法使用，Code Indicator 会使用第一个 workspace folder 下的 `.tmp/images`。
 
@@ -68,7 +70,7 @@ Code Indicator 支持 PNG、JPEG、GIF、WebP、BMP、AVIF、TIFF 和 SVG 图片
 }
 ```
 
-`codeIndicator.terminal.trailingCharacter` 可设为 `space` 或 `newline`。
+`codeIndicator.terminal.trailingCharacter` 可设为 `space` 或 `newline`。此设置会应用到发送的 code location 和粘贴的 Markdown 图片链接。
 
 ## Output Format
 

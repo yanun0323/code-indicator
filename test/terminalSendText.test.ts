@@ -28,3 +28,14 @@ test("falls back to space for an unknown trailing character", () => {
     addNewLine: false
   });
 });
+
+test("applies the trailing character to a pasted image link", () => {
+  assert.deepEqual(getTerminalSendText("[image](./.tmp/images/1786423812345.png)", "space"), {
+    text: "[image](./.tmp/images/1786423812345.png) ",
+    addNewLine: false
+  });
+  assert.deepEqual(getTerminalSendText("[image](./.tmp/images/1786423812345.png)", "newline"), {
+    text: "[image](./.tmp/images/1786423812345.png)",
+    addNewLine: true
+  });
+});

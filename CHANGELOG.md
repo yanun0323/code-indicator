@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.7
+
+- Remove the leading space from pasted Markdown image links.
+- Apply `codeIndicator.terminal.trailingCharacter` to pasted image links.
+
 ## 1.0.6
 
 - Save images pasted into the embedded terminal and insert Markdown image links.

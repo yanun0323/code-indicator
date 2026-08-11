@@ -20,7 +20,7 @@ test("uses .tmp/images when the custom image directory is empty", async (t) => {
   });
 
   assert.deepEqual(result, {
-    markdown: " [image](./.tmp/images/1786423812345.png) ",
+    markdown: "[image](./.tmp/images/1786423812345.png)",
     usedFallbackDirectory: false
   });
   assert.deepEqual(
@@ -42,7 +42,7 @@ test("saves a pasted image in a workspace-relative custom directory", async (t) 
   });
 
   assert.deepEqual(result, {
-    markdown: " [image](<./custom images/1786423812346.jpg>) ",
+    markdown: "[image](<./custom images/1786423812346.jpg>)",
     usedFallbackDirectory: false
   });
   assert.equal(
@@ -68,7 +68,7 @@ test("saves a pasted image in an absolute custom directory", async (t) => {
   const markdownPath = path.join(customImageDirectory, "1786423812347.png").split(path.sep).join("/");
 
   assert.deepEqual(result, {
-    markdown: ` [image](<${markdownPath}>) `,
+    markdown: `[image](<${markdownPath}>)`,
     usedFallbackDirectory: false
   });
   assert.equal((await readFile(path.join(customImageDirectory, "1786423812347.png"))).toString(), "image");
@@ -88,7 +88,7 @@ test("falls back to .tmp/images when the custom image directory is unavailable",
   });
 
   assert.deepEqual(result, {
-    markdown: " [image](./.tmp/images/1786423812347.png) ",
+    markdown: "[image](./.tmp/images/1786423812347.png)",
     usedFallbackDirectory: true
   });
   assert.equal(

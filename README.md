@@ -39,17 +39,19 @@ The view toolbar can spawn, kill, restart, or open settings for the Code Indicat
 
 Paste an image into the embedded terminal. Code Indicator saves the image in `.tmp/images` under the first workspace folder. Code Indicator creates the directory when necessary. The file name is the current Unix timestamp in milliseconds.
 
-After the save succeeds, Code Indicator inserts this Markdown text. In this example, `<space>` means one space:
+After saving the image, Code Indicator inserts a Markdown image link. Code Indicator does not add a leading space. `codeIndicator.terminal.trailingCharacter` controls the suffix. The default `space` setting produces this text:
 
 ```text
-<space>[image](./.tmp/images/1786423812345.png)<space>
+[image](./.tmp/images/1786423812345.png)<space>
 ```
+
+The `newline` setting submits the terminal input after Code Indicator inserts the link.
 
 Code Indicator supports PNG, JPEG, GIF, WebP, BMP, AVIF, TIFF, and SVG images. The image size limit is 20 MB.
 
 ## Settings
 
-Settings are grouped into Terminal, Image Paste, and Context Menu. The terminal startup command is optional and runs when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view. Terminal focus after sending is enabled by default. The trailing character sent to the terminal defaults to a space. The editor context menu items can be shown or hidden individually.
+Settings are grouped into Terminal, Image Paste, and Context Menu. The terminal startup command is optional and runs when the Code Indicator terminal is spawned, reloaded, or auto-started by opening the view. Terminal focus after sending is enabled by default. The trailing character after a location or pasted image link defaults to a space. The editor context menu items can be shown or hidden individually.
 
 To use another image directory, enable `codeIndicator.useCustomImageDirectory` and set `codeIndicator.customImageDirectory`. Use an absolute path or a path relative to the first workspace folder. If the value is empty or the directory cannot be used, Code Indicator uses `.tmp/images` under the first workspace folder.
 
@@ -68,7 +70,7 @@ Image links use relative paths for files inside the first workspace folder. Imag
 }
 ```
 
-`codeIndicator.terminal.trailingCharacter` accepts `space` or `newline`.
+`codeIndicator.terminal.trailingCharacter` accepts `space` or `newline`. This setting applies to sent locations and pasted image links.
 
 ## Output Format
 

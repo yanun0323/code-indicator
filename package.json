@@ -2,7 +2,7 @@
   "name": "code-indicator",
   "displayName": "Code Indicator",
   "description": "Copy or send the current selection location in an rg-friendly format.",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "publisher": "Yanun",
   "license": "SEE LICENSE IN LICENSE",
   "icon": "media/icon.png",
@@ -68,10 +68,10 @@
             "default": "space",
             "order": 3,
             "scope": "resource",
-            "description": "Choose the trailing character sent after the location.",
+            "description": "Choose what Code Indicator sends after a location or pasted image link.",
             "enumDescriptions": [
-              "Append a space after the location without submitting the terminal input.",
-              "Submit the terminal input after the location."
+              "Append a space after the location or pasted image link without submitting the terminal input.",
+              "Submit the terminal input after the location or pasted image link."
             ]
           }
         }

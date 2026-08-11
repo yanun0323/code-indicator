@@ -85,7 +85,7 @@ async function writePastedImage(
   const markdownPath = (isInProject ? `.${path.sep}${relativePath}` : filePath).split(path.sep).join("/");
   const destination = /\s/.test(markdownPath) ? `<${markdownPath}>` : markdownPath;
 
-  return ` [image](${destination}) `;
+  return `[image](${destination})`;
 }
 
 function decodeImage(base64: string): Buffer {

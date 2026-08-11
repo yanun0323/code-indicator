@@ -8,6 +8,7 @@ import {
   savePastedImage
 } from "./pastedImage";
 import { PtyTerminalSession, TerminalSessionStatus } from "./ptyTerminalSession";
+import { getTerminalSendText } from "./terminalSendText";
 
 const TERMINAL_READY_TYPE = "ready";
 const TERMINAL_INPUT_TYPE = "input";
@@ -187,7 +188,12 @@ export class CodeIndicatorTerminalViewProvider implements vscode.WebviewViewProv
           "Unable to use Custom Image Directory. Check the path and permissions. The image was saved in .tmp/images."
         );
       }
-      if (!this.session.write(savedImage.markdown)) {
+      const sendText = getTerminalSendText(
+        savedImage.markdown,
+        configuration.get<string>("terminal.trailingCharacter", "space")
+      );
+      const terminalInput = sendText.addNewLine ? `${sendText.text}\r` : sendText.text;
+      if (!this.session.write(terminalInput)) {
         void vscode.window.showErrorMessage(
           "The image was saved, but the terminal stopped before Code Indicator pasted the link. Start the terminal and paste the image again."
         );
